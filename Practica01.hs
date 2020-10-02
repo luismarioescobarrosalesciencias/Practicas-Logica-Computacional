@@ -5,7 +5,10 @@ module Practica01 where
 
 --primitivo. Función que recibe un entero y devuelve su primitivo.
 primitivo :: Int -> Int
-primitivo n = error "Sin implementar."
+primitivo n
+   |n < 10 = n
+   |otherwise = mod n 10 * (n - mod n 10)
+
 
 
 --area. Función que recibe tres puntos y devuelve el área del
@@ -35,18 +38,44 @@ esPalindromo s = error "Sin implementar."
 --            dos listas.
 diferencia :: Eq a => [a] -> [a] -> [a]
 diferencia [] [] = []
-diferencia [a] [] = [a]
+diferencia [a] [] = []
 diferencia [] [b] = [b]
+diferencia [a] [b]
+    | not (contiene b [a]) = [b]
+    | otherwise = []
+diferencia [a] (y:b)
+    | not (contiene y [a]) = [y] ++ diferencia [a] b
+    | otherwise = diferencia [a] b
+diferencia (x:a) [b]
+    | not (contiene b (x:a)) = [b]
+    | otherwise = []
 diferencia (x:a) (y:b)
-    | x /= y = (y:diferencia a b)
-    |otherwise = diferencia a b
+    | not (contiene y (x:a)) = [y] ++ diferencia (x:a) b
+    | otherwise = diferencia (x:a) b
+
+--contiene. Función auxiliar que verifica si una lista contiene o no a un
+--          elemento
+contiene :: Eq a => a -> [a] -> Bool
+contiene x [] = False
+contiene x (y:b)
+    | x == y = True
+    | otherwise = contiene x b
 
 
 --primos. Función que devuelve una lista con todos los números primos
 --        hasta n.
 primos :: Int -> [Int]
-primos n = error "Sin implementar."
+primos n = [x | x <- [2..n], esPrimo x]
 
+-- factores. Función  auxiliar que idica todos los factores por los cuales es
+--           divisible numero.
+factores :: Int -> [Int]
+factores n = [x | x <- [1..n], n `mod` x == 0]
+
+-- esPrimo. Función  auxiliar que indica si un numero es o no un primo a partir
+--          de verificar si es divisible entre solamente 1 y si mismo.
+esPrimo :: Int -> Bool
+esPrimo n = factores n == [1,n]
 
 
 {-- Definición de Binario.--}
