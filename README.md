@@ -1,2 +1,6 @@
 # Practicas-Logica-Computacional
-Practicas de logica computacional, prolog,haskell, coq 
+Practicas de Lógica Computacional 
+-Prolog
+-Haskell
+-Coq
+
