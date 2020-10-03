@@ -7,15 +7,12 @@ module Practica01 where
 primitivo :: Int -> Int
 primitivo n
    |n < 10 = n
-   |otherwise = mod n 10 * (n - mod n 10)
-
-
+   |otherwise = n `mod` 10 * primitivo n `div` 10
 
 --area. Función que recibe tres puntos y devuelve el área del
 --      triángulo formado.
 area :: (Double, Double) -> (Double, Double) -> (Double, Double) -> Double
-area (x1, y1) (x2, y2) (x3, y3) = sqrt((x1-x2)^2+(y1-y2)^2) * sqrt((x2-x3)^2+(y2-y3)^2) / 2
-
+area (x1, y1) (x2, y2) (x3, y3) = (((x1 * y2) + (x2 * y3) + (x3 * y1)) - ((x1 * y3) + (x3 * y2) +(x2 * y1))) / 2
 
 --heterograma. Función que recibe una cadena y lo convierte en un
 --             heterograma.
@@ -100,4 +97,6 @@ data Arbol a = Vacio | Nodo a (Arbol a) (Arbol a) deriving(Show)
 --inOrden. Función que convierte un árbol binario en una lista por
 --         su recorrido in-orden.
 inOrden :: Arbol a -> [a]
-inOrden t = error "Sin implementar."
+inOrden Vacio = []
+inOrden (Nodo r Vacio Vacio) = [r]
+inOrden (Nodo r i d) = inOrden i ++ [r] ++ inOrden d
