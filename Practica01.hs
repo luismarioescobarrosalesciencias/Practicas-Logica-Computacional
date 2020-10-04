@@ -1,7 +1,7 @@
 -- Equipo Dinamita
 -- Integrantes:
--- Escobar Rosales Luis Maro
--- Liera Montaño Miguel Ángel
+--  Escobar Rosales Luis Maro
+--  Liera Montaño Miguel Ángel
 -- Práctica01
 
 module Practica01 where
