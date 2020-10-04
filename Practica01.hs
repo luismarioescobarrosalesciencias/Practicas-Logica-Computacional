@@ -7,7 +7,7 @@ module Practica01 where
 primitivo :: Int -> Int
 primitivo n
    |n < 10 = n
-   |otherwise = n `mod` 10 * primitivo n `div` 10
+   |otherwise = primitivo (n `mod` 10 * primitivo (n `div` 10))
 
 --area. Función que recibe tres puntos y devuelve el área del
 --      triángulo formado.
