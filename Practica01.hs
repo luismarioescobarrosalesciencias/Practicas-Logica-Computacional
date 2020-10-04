@@ -6,8 +6,15 @@ module Practica01 where
 --primitivo. Función que recibe un entero y devuelve su primitivo.
 primitivo :: Int -> Int
 primitivo n
-   |n < 10 = n
-   |otherwise = n `mod` 10 * primitivo n `div` 10
+	|n>10=multiplica (multiplica n)
+	|otherwise=n
+
+
+--multiplica Funcion que multiplica los digitos de un entero,
+multiplica ::Int -> Int
+multiplica 0=1 --esto es necesario para que las multiplicaciones de los siguientes casos no se multipliquen por 0
+multiplica n=(mod n 10) * multiplica(div n 10)  --Modulo n y 10 multiplicado por la division de n entre 10, lo cual nos terminara dando un numero con 2 digitos 
+
 
 --area. Función que recibe tres puntos y devuelve el área del
 --      triángulo formado.
