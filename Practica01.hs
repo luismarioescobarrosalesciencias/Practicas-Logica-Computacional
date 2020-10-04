@@ -14,9 +14,7 @@ primitivo n
 area :: (Double, Double) -> (Double, Double) -> (Double, Double) -> Double
 area (x1, y1) (x2, y2) (x3, y3) = (((x1 * y2) + (x2 * y3) + (x3 * y1)) - ((x1 * y3) + (x3 * y2) +(x2 * y1))) / 2
 
---cabeza, FUncion auxiliar  que recibe una lista y regresa la cabeza
-cabeza ::Eq a=> [a] -> a  --Importante el Eq a, si no se lo pogno causa conflicto con la definicion binaria
-cabeza (x:xs)=x
+
 
 --Funcion aulixiar que elimina caracteres repetidos de una lista 
 eliminar::Eq a =>[a]->[a] --La firma no esta hecha String ->String  por si se llegara a necesitar esta funcion con alguna otro tipo de listas 
@@ -107,15 +105,20 @@ instance Show Binario where
 	show U = "1"
  	show (Cero b) = show b ++ "0"
   	show (Uno b) = show b ++ "1"
-
+--Funcion axuliar, la vimos en clase, regresa el sucesor 
 sucesor :: Binario -> Binario
-sucesor U = (Cero U)
-sucesor (Cero b) = (Uno b)
-sucesor (Uno b) = (Cero (sucesor b))	
+sucesor U = (Cero U) -- Cero U == 01
+sucesor (Cero b) = (Uno b) --Cero U es 10, por la def de show, luego nos regresa Uno b que es 11 
+sucesor (Uno b) = (Cero (sucesor b)) --recursivo	
 
 --suma. Función que devuelve la suma de dos Binarios.
 suma :: Binario -> Binario -> Binario
-suma b1 b2 = error "Sin implementar."
+suma b U = sucesor(b) --caso base , esto es igual a sucesor U = Cero U, esto nos sirve para "sumar un mas 1" ya que en nuestra definicion U=1, 
+suma U b= sucesor (b)	--caso base, esto es iguala sucesor U =Cero U
+suma (Cero a) (Cero b) = Cero( suma a b) --llamada recursiva
+suma (Cero a) (Uno b) = Uno(suma a b) --llamada recursiva 
+suma(Uno a) (Cero b) = Uno(suma a b)
+suma (Uno a) (Uno b)= Cero(sucesor(suma a b))  
 
 
 
