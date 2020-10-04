@@ -14,10 +14,28 @@ primitivo n
 area :: (Double, Double) -> (Double, Double) -> (Double, Double) -> Double
 area (x1, y1) (x2, y2) (x3, y3) = (((x1 * y2) + (x2 * y3) + (x3 * y1)) - ((x1 * y3) + (x3 * y2) +(x2 * y1))) / 2
 
+--cabeza, FUncion auxiliar  que recibe una lista y regresa la cabeza
+cabeza ::Eq a=> [a] -> a  --Importante el Eq a, si no se lo pogno causa conflicto con la definicion binaria
+cabeza (x:xs)=x
+
+--Funcion aulixiar que elimina caracteres repetidos de una lista 
+eliminar::Eq a =>[a]->[a] --La firma no esta hecha String ->String  por si se llegara a necesitar esta funcion con alguna otro tipo de listas 
+eliminar a =remover a [] --mandamos dos listas, la lista que recibimos inicialmente y una lista vacia
+
+--Funcion remover, funcion auxiliar para remover elementos repetidos
+-- x`elem`y evalua si x es elemento de y
+remover::Eq a=>[a]->[a]->[a] 
+remover [] a=[]
+remover (x:xs) listaaux 
+	|(x`elem`listaaux) = remover xs listaaux --Si x es elemento de la lista auxiliar entonces llamamos a remover con los argumentos xs (cola de la lista [a]) y listaauxiliar 
+	|otherwise = x:(remover xs (x:listaaux)) --Si x no es elemento de la lista auxiliar entonces concatenamos x con remover de xs con (x:listaaux)
+							--en este caso actualizamos la lista auxiliar guardando la cabeza de nuestra primera lista (de no hacerlo asi no se eliminaria nada)
+
 --heterograma. Función que recibe una cadena y lo convierte en un
 --             heterograma.
 heterograma :: String -> String
-heterograma s = error "Sin implementar."
+heterograma a = eliminar a  --Se utilizaron las funciones auxiliares eliminar y remover
+
 
 
 --bolsa. Función que recibe una cadena y devuelve una lista de tuplas
@@ -26,9 +44,14 @@ heterograma s = error "Sin implementar."
 --bolsa s = error "Sin implementar."
 
 
+--Es la misma funcion reversa que vimos  en la clase pero esta recibe una lista y devuelve una lista 
+reversa :: [a]-> [a]
+reversa [] = []
+reversa (x:xs) = reversa xs ++ [x]
 --esPalindromo. Función que verifica si una cadena es palíndromo.
 esPalindromo :: Eq a => [a] -> Bool
-esPalindromo s = error "Sin implementar."
+esPalindromo [] =True --El caso base es True, ya que de lo contrario
+esPalindromo a = a==reversa(a)  --Si  a que esta actuando como lista [] es igual a la reversa de a que igual actua como lista  entonces es palindromo	
 
 
 --diferencia. Función que devuelve una lista con la diferencia entre
@@ -81,8 +104,14 @@ data Binario = U | Cero Binario | Uno Binario
 
 --Instancia de la clase Show para Binario.
 instance Show Binario where
-	show b = error "Sin implementar."
+	show U = "1"
+ 	show (Cero b) = show b ++ "0"
+  	show (Uno b) = show b ++ "1"
 
+sucesor :: Binario -> Binario
+sucesor U = (Cero U)
+sucesor (Cero b) = (Uno b)
+sucesor (Uno b) = (Cero (sucesor b))	
 
 --suma. Función que devuelve la suma de dos Binarios.
 suma :: Binario -> Binario -> Binario
