@@ -50,7 +50,7 @@ heterograma a = eliminar a  --Se utilizaron las funciones auxiliares eliminar y 
 --       con el número de ocurrencias de cada letra de la palabra.
 bolsa :: String -> [(Char, Int)]
 bolsa [] = []
-bolsa (x:xs) =  [(x,apariciones x (x:xs))] ++ bolsa (filter (/= x) xs /x)
+bolsa (x:xs) =  [(x,apariciones x (x:xs))] ++ bolsa (filter (/= x) xs)
 --filter es utilizado para que la letra no vuelva a contemplarse en lo que resta de la lista
 -- y que no vuelva a contar las repeticiones de la letra en la cadena
 
