@@ -24,11 +24,11 @@ instance Show Prop where
 --1. interp. Función que evalua una proposición dado el estado.
 interp :: Estado -> Prop -> Bool
 interp [] (PVar p) = False
-interp (x:xs) PTrue = True
-interp (x:xs) PFalse = False
+--interp (x:xs) PTrue = True
+--interp (x:xs) PFalse = False
 interp (x:xs) (PVar p)
-    | contiene x [x] && contiene x (vars (PVar p)) = True
-    | otherwise = False
+    | contiene x (vars (PVar p)) = True
+    | otherwise = interp xs (PVar p)
 interp (x:xs) (PNeg p) = not (interp (x:xs) p)
 interp [] (PNeg p) = not (interp [] p)
 interp (x:xs) (POr p q) = (interp (x:xs) p) || (interp (x:xs) q)
@@ -51,8 +51,6 @@ contiene x (y:b)
 --2. estados. Función que devuelve una lista de todas las combinaciones
 -- 				posibles de los estados de una proposición.
 estados :: Prop -> [Estado]
-estados PTrue  = [vars PTrue]
-estados PFalse  = [vars PFalse]
 estados (PVar p)  = [vars (PVar p)]
 estados (PNeg p) = subconj (vars (PNeg p))
 estados (POr p q) = subconj (vars (POr p q))
@@ -95,33 +93,42 @@ subconj (x:xs) = [x:as | as <- subconj xs] ++ subconj xs
 --5. modelos. Función que devuelve la lista de todos los modelos posibles
 -- 				para una proposición.
 modelos :: Prop -> [Estado]
-modelos p = error "Sin implementar."
+modelos p = [i | i <- estados p, interp i p == True]
 
 --6. tautologia. Función que dice si una proposición es tautología.
 tautologia :: Prop -> Bool
-tautologia p = error "Sin implementar."
+tautologia p = estados p == modelos p
 
 --7. satisfen. Función que resuelve si una proposición es satisfacible
 -- 				con cierto estado.
 satisfen :: Estado -> Prop -> Bool
-satisfen e p = error "Sin implementar."
+satisfen e p = interp e p == True
 
 --8. satisf. Función que resuelve si una proposición es satisfacible.
 satisf :: Prop -> Bool
-satisf p = error "Sin implementar."
+satisf p = modelos p /= []
 
 --9. insatisfen. Función que resuelve si una proposición es insatisfacible
 -- 					con cierto estado.
 insatisfen :: Estado -> Prop -> Bool
-insatisfen e p = error "Sin implementar."
+insatisfen e p = interp e p == False
 
 --10. contrad. Función que dice si una proposición es una contradicción.
 contrad :: Prop -> Bool
-contrad p = error "Sin implementar."
+contrad p = modelos p == []
 
 --11. equiv. Función que devuelve True si dos proposiciones son equivalentes.
 equiv :: Prop -> Prop -> Bool
-equiv p1 p2 = error "Sin implementar."
+equiv p1 p2 = (modelos p1 == modelos p2) || contenido (modelos p1) (modelos p2) || contenido (modelos p2) (modelos p1)
+
+-- contenido. Funcion auxiliar que permite saber si un conjunto esta contenido en otro
+contenido :: Eq a => [a] -> [a] -> Bool
+contenido [x] [] = False
+contenido [] [x] = False
+contenido [] [] = True
+contenido [x] (y:ys) = contiene x (y:ys)
+contenido (x:xs) [y] = contiene y (x:xs)
+contenido (x:xs) (y:ys) = contiene x (y:ys) && contenido xs (y:ys)
 
 --12. elimEquiv. Función que elimina las equivalencias lógicas.
 elimEquiv :: Prop -> Prop
