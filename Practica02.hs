@@ -1,4 +1,4 @@
---
+  --
 --
 module Practica02 where
 
@@ -139,7 +139,7 @@ elimEquiv (PNeg p)=PNeg(elimEquiv p)
 elimEquiv (POr p q)=POr(elimEquiv p) (elimEquiv q)
 elimEquiv (PAnd p q)=PAnd(elimEquiv p) (elimEquiv q)
 elimEquiv(PImpl p q)=PImpl(elimEquiv p) (elimEquiv q)
-elimEquiv(PEquiv p q)= PAnd(elimEquiv(PImpl p q)) (elimEquiv(PImpl q p)) 	
+elimEquiv(PEquiv p q)= PAnd(elimEquiv(PImpl p q)) (elimEquiv(PImpl q p))
 
 --13. elimImpl. Función que elimina las implicaciones lógicas.
 elimImpl :: Prop -> Prop
@@ -153,10 +153,10 @@ elimImpl(PImpl p q)= POr(elimImpl (PNeg p))(elimImpl q)
 elimImpl(PEquiv p q)= PEquiv(elimImpl p)(elimImpl q)
 
 
- 
+
 
 --14. deMorgan. Función que aplica las leyes de DeMorgan a una proposición.
---deMorgan :: Prop -> Prop
+deMorgan :: Prop -> Prop
 deMorgan(PNeg (PNeg p))= p
 deMorgan(PNeg (POr p q))= PAnd (PNeg p)(PNeg q)
 deMorgan(PNeg (PAnd p q))= POr (PNeg p)(PNeg q)
@@ -168,7 +168,8 @@ deMorgan(PNeg (PAnd p q))= POr (PNeg p)(PNeg q)
 estadosConj :: [Prop] -> [Estado]
 estadosConj []=[]
 estadosConj [p] =estados p
-estadosCOnj (p:ps)=unirlistas (estados p)  (estadosConj ps)
+estadosCOnj (p:ps)=unirlistas(estados p)  (estadosConj ps)
+
 
 unirlistas:: Eq a=>[a]->[a]->[a]
 unirlistas b []=b
@@ -196,9 +197,9 @@ insatisfenConj e (p:ps)
 
 insatisfConj:: [Prop] -> Bool
 insatisfConj (p:ps)
-	|(satisfConj (p:ps) ==True) =False  
+	|(satisfConj (p:ps) ==True) =False
 	| otherwise =True
-	
+
 --consecuencia. Función que determina si una proposición es consecuencia
 --				del conjunto de premisas.
 consecuencia:: [Prop] -> Prop -> Bool
