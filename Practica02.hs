@@ -132,29 +132,76 @@ contenido (x:xs) (y:ys) = contiene x (y:ys) && contenido xs (y:ys)
 
 --12. elimEquiv. Función que elimina las equivalencias lógicas.
 elimEquiv :: Prop -> Prop
-elimEquiv p = error "Sin implementar."
+elimEquiv PTrue =PTrue
+elimEquiv PFalse=PFalse
+elimEquiv (PVar p)= PVar p
+elimEquiv (PNeg p)=PNeg(elimEquiv p)
+elimEquiv (POr p q)=POr(elimEquiv p) (elimEquiv q)
+elimEquiv (PAnd p q)=PAnd(elimEquiv p) (elimEquiv q)
+elimEquiv(PImpl p q)=PImpl(elimEquiv p) (elimEquiv q)
+elimEquiv(PEquiv p q)= PAnd(elimEquiv(PImpl p q)) (elimEquiv(PImpl q p)) 	
 
 --13. elimImpl. Función que elimina las implicaciones lógicas.
 elimImpl :: Prop -> Prop
-elimImpl p = error "Sin implementar."
+elimImpl PTrue= PTrue
+elimImpl PFalse=PFalse
+elimImpl (PVar p) = PVar p
+elimImpl (PNeg p)= PNeg(elimImpl p)
+elimImpl(POr p q)= POr(elimImpl p) (elimImpl q)
+elimImpl (PAnd p q) = PAnd(elimImpl p)(elimImpl q)
+elimImpl(PImpl p q)= POr(elimImpl (PNeg p))(elimImpl q)
+elimImpl(PEquiv p q)= PEquiv(elimImpl p)(elimImpl q)
+
+
+ 
 
 --14. deMorgan. Función que aplica las leyes de DeMorgan a una proposición.
-deMorgan :: Prop -> Prop
-deMorgan p = error "Sin implementar."
+--deMorgan :: Prop -> Prop
+deMorgan(PNeg (PNeg p))= p
+deMorgan(PNeg (POr p q))= PAnd (PNeg p)(PNeg q)
+deMorgan(PNeg (PAnd p q))= POr (PNeg p)(PNeg q)
+
 
 
 {-- Punto extra--}
-{--
-estadosConj :: [Prop] -> [Estado]
-modelosConj :: [Prop] -> [Estado]
-satisfenConj:: Estado -> [Prop] -> Bool
-satisfConj:: [Prop] -> Bool
-insatisfenConj:: Estado -> [Prop] -> Bool
-insatisfConj:: [Prop] -> Bool
 
+estadosConj :: [Prop] -> [Estado]
+estadosConj []=[]
+estadosConj [p] =estados p
+estadosCOnj (p:ps)=unirlistas (estados p)  (estadosConj ps)
+
+unirlistas:: Eq a=>[a]->[a]->[a]
+unirlistas b []=b
+unirlistas [] b= b
+uniirlistas (x:xs)b
+	|elem x b= unirlistas xs b
+	|otherwise= x:unirlistas xs b
+
+modelosConj :: [Prop] -> [Estado]
+modelosConj [] =[]
+modelosConj [p]= modelos p
+modelosConj (p:ps)=unirlistas(modelos p) (modelosConj ps)
+
+satisfenConj:: Estado -> [Prop] -> Bool
+satisfenConj e (p:ps)= (satisfen e p) && (satisfenConj e ps)
+
+satisfConj:: [Prop] -> Bool
+satisfConj (p:ps)=(satisf p) && (satisfConj ps)
+
+
+insatisfenConj:: Estado -> [Prop] -> Bool
+insatisfenConj e (p:ps)
+	|(satisfenConj e (p:ps)==True )=False
+	|otherwise =True
+
+insatisfConj:: [Prop] -> Bool
+insatisfConj (p:ps)
+	|(satisfConj (p:ps) ==True) =False  
+	| otherwise =True
+	
 --consecuencia. Función que determina si una proposición es consecuencia
 --				del conjunto de premisas.
-consecuencia: [Prop] -> Prop -> Bool
+consecuencia:: [Prop] -> Prop -> Bool
 consecuencia gamma phi = null [i | i <- estadosConj (phi : gamma),
 								satisfenConj i gamma,
 								not (satisfen i phi)]
@@ -163,4 +210,3 @@ consecuencia gamma phi = null [i | i <- estadosConj (phi : gamma),
 --				correcto dadas las premisas.
 argCorrecto :: [Prop] -> Prop -> Bool
 argCorrecto gamma psi = consecuencia gamma psi
---}
