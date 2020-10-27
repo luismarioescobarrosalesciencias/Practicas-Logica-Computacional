@@ -157,11 +157,12 @@ elimImpl(PEquiv p q)= PEquiv(elimImpl p)(elimImpl q)
 
 --14. deMorgan. Función que aplica las leyes de DeMorgan a una proposición.
 deMorgan :: Prop -> Prop
+deMorgan (PVar p)=PVar p
+deMorgan (PNeg (PVar p))= PNeg(PVar p)
 deMorgan(PNeg (PNeg p))= p
-deMorgan(PNeg (POr p q))= PAnd (PNeg p)(PNeg q)
-deMorgan(PNeg (PAnd p q))= POr (PNeg p)(PNeg q)
-
-
+deMorgan(PNeg (POr p q))= PAnd (deMorgan( PNeg p))(deMorgan(PNeg q))
+deMorgan(PNeg (PAnd p q))= POr (deMorgan (PNeg p))(deMorgan(PNeg q))
+deMorgan p= p
 
 {-- Punto extra--}
 
