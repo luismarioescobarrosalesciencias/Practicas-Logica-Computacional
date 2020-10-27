@@ -24,8 +24,8 @@ instance Show Prop where
 --1. interp. Función que evalua una proposición dado el estado.
 interp :: Estado -> Prop -> Bool
 interp [] (PVar p) = False
---interp (x:xs) PTrue = True
---interp (x:xs) PFalse = False
+interp (x:xs) PTrue = True
+interp (x:xs) PFalse = False
 interp (x:xs) (PVar p)
     | contiene x (vars (PVar p)) = True
     | otherwise = interp xs (PVar p)
@@ -152,9 +152,6 @@ elimImpl (PAnd p q) = PAnd(elimImpl p)(elimImpl q)
 elimImpl(PImpl p q)= POr(elimImpl (PNeg p))(elimImpl q)
 elimImpl(PEquiv p q)= PEquiv(elimImpl p)(elimImpl q)
 
-
-
-
 --14. deMorgan. Función que aplica las leyes de DeMorgan a una proposición.
 deMorgan :: Prop -> Prop
 deMorgan (PVar p)=PVar p
@@ -162,33 +159,53 @@ deMorgan (PNeg (PVar p))= PNeg(PVar p)
 deMorgan(PNeg (PNeg p))= p
 deMorgan(PNeg (POr p q))= PAnd (deMorgan( PNeg p))(deMorgan(PNeg q))
 deMorgan(PNeg (PAnd p q))= POr (deMorgan (PNeg p))(deMorgan(PNeg q))
-deMorgan p= p
+deMorgan p = p
 
 {-- Punto extra--}
 
 estadosConj :: [Prop] -> [Estado]
-estadosConj []=[]
-estadosConj [p] =estados p
-estadosCOnj (p:ps)=unirlistas(estados p)  (estadosConj ps)
+estadosConj [] = []
+estadosConj [p] = estados p
+estadosConj (p:ps) = (estados p) ++ (estadosConj ps)
 
 
 unirlistas:: Eq a=>[a]->[a]->[a]
 unirlistas b []=b
 unirlistas [] b= b
-uniirlistas (x:xs)b
-	|elem x b= unirlistas xs b
+unirlistas [a] [b] =  [a] ++ [b]
+unirlistas (x:xs) (y:ys) =  (x:xs) ++ (y:ys)
+uniirlistas (x:xs) b
+	|elem x b = unirlistas xs b
 	|otherwise= x:unirlistas xs b
 
 modelosConj :: [Prop] -> [Estado]
-modelosConj [] =[]
+modelosConj [p] = [i | i <- estadosConj [p], interpConj [i] [p] == True]
+{-- modelosConj [] =[]
 modelosConj [p]= modelos p
-modelosConj (p:ps)=unirlistas(modelos p) (modelosConj ps)
+modelosConj (p:ps)
+   |(contenido [(vars p)] (varsConj ps)) && (contenido (modelos p) (modelosConj ps)) = (modelos p) ++ (modelosConj ps)
+   |(contenido [(vars p)] (varsConj ps)) && not(contenido (modelos p) (modelosConj ps)) = []
+   |otherwise = []--}
+
+interpConj :: [Estado] -> [Prop] -> Bool
+interpConj [] [p] = interp [] p
+interpConj [e] [p] = interp e p
+interpConj [e] (p:ps) = (interp e p) && (interpConj [e] ps)
+interpConj (x:xs) (y:ys) = (interp x y) && (interpConj [x] ys) && (interpConj xs [y]) && (interpConj xs ys)
+
+varsConj :: [Prop] -> [Estado]
+varsConj [p] = eliminar [vars p]
+varsConj (p:ps) = eliminar ([(vars p)] ++ (varsConj ps))
 
 satisfenConj:: Estado -> [Prop] -> Bool
+--satisfenConj e [] =
+satisfenConj e [p] = (satisfen e p)
 satisfenConj e (p:ps)= (satisfen e p) && (satisfenConj e ps)
 
 satisfConj:: [Prop] -> Bool
-satisfConj (p:ps)=(satisf p) && (satisfConj ps)
+satisfConj [] = False
+satisfConj [p] = (satisf p)
+-- satisfConj (p:ps) = contenido (modelos p) (satisfConj ps)
 
 
 insatisfenConj:: Estado -> [Prop] -> Bool
@@ -199,7 +216,7 @@ insatisfenConj e (p:ps)
 insatisfConj:: [Prop] -> Bool
 insatisfConj (p:ps)
 	|(satisfConj (p:ps) ==True) =False
-	| otherwise =True
+	| otherwise = True
 
 --consecuencia. Función que determina si una proposición es consecuencia
 --				del conjunto de premisas.
