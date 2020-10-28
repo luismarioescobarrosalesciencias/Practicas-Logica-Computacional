@@ -55,6 +55,8 @@ contiene x (y:b)
 --2. estados. Función que devuelve una lista de todas las combinaciones
 -- 				posibles de los estados de una proposición.
 estados :: Prop -> [Estado]
+estados PTrue = []
+estados PFalse = []
 estados (PVar p)  = [vars (PVar p)]
 estados (PNeg p) = subconj (vars (PNeg p))
 estados (POr p q) = subconj (vars (POr p q))
@@ -76,7 +78,7 @@ vars (PEquiv p q) = eliminar (vars p ++ vars q)
 
 --Funcion aulixiar que elimina caracteres repetidos de una lista
 eliminar::Eq a =>[a]->[a] --La firma no esta hecha String ->String  por si se llegara a necesitar esta funcion con alguna otro tipo de listas
-eliminar a =remover a [] --mandamos dos listas, la lista que recibimos inicialmente y una lista vacia
+eliminar a = remover a [] --mandamos dos listas, la lista que recibimos inicialmente y una lista vacia
 
 --Funcion auxiliar remover, funcion auxiliar para remover elementos repetidos
 -- x`elem`y evalua si x es elemento de y
@@ -178,31 +180,19 @@ estadosConj [] = []
 estadosConj [p] = estados p
 estadosConj (p:ps) = (estados p) ++ (estadosConj ps)
 
--- unirlistas. Funcion auxiliar que une dos listas
-unirlistas:: Eq a=>[a]->[a]->[a]
-unirlistas b []=b
-unirlistas [] b= b
-unirlistas [a] [b] =  [a] ++ [b]
-unirlistas (x:xs) (y:ys) =  (x:xs) ++ (y:ys)
-uniirlistas (x:xs) b
-	|elem x b = unirlistas xs b
-	|otherwise= x:unirlistas xs b
-
 -- modelosConj. Funcion que obtiene los modelos de un conjunto de formulas
 modelosConj :: [Prop] -> [Estado]
-modelosConj [p] = [i | i <- estadosConj [p], interpConj [i] [p] == True]
+modelosConj p = [i | i <- estadosConj p, interpConj [i] p == True]
+modelosConj (x:xs) = [i | i <- estadosConj (x:xs), interpConj [i] (x:xs) == True]
 
 --  interpConj. Funcion que da la interpretacion de un conjunto de formulas dado un conjunto de estados
 interpConj :: [Estado] -> [Prop] -> Bool
 interpConj [] [p] = interp [] p
+interpConj [e] [] = False
 interpConj [e] [p] = interp e p
+interpConj (e:es) [p] = (interp e p) || (interpConj es [p])
 interpConj [e] (p:ps) = (interp e p) && (interpConj [e] ps)
-interpConj (x:xs) (y:ys) = (interp x y) && (interpConj [x] ys) && (interpConj xs [y]) && (interpConj xs ys)
-
--- varsConj. Funcion auxiliar que obtiene las vaiables de un conjunto de formulas
-varsConj :: [Prop] -> [Estado]
-varsConj [p] = eliminar [vars p]
-varsConj (p:ps) = eliminar ([(vars p)] ++ (varsConj ps))
+interpConj (x:xs) (y:ys) = ((interp x y) || (interpConj [x] ys)) && ((interpConj xs [y]) || (interpConj xs ys))
 
 -- satisfenConj. Función que determina su un conjunto de formulas es satisfacible
 satisfenConj:: Estado -> [Prop] -> Bool
@@ -212,26 +202,24 @@ satisfenConj e (p:ps)= (satisfen e p) && (satisfenConj e ps)
 -- satisfConj. Función que determina su un conjunto de formulas es satisfacible
 satisfConj:: [Prop] -> Bool
 satisfConj [] = False
-satisfConj [p] = (satisf p)
+satisfConj (x:xs) = modelosConj (x:xs) /= []
 
 -- insatisfenConj. Función que dado un estado determina su un conjunto de formulas es insatisfacible
 insatisfenConj:: Estado -> [Prop] -> Bool
 insatisfenConj e (p:ps)
-	|(satisfenConj e (p:ps)==True )=False
-	|otherwise =True
+    |(satisfenConj e (p:ps)==True )=False
+    |otherwise =True
 
 -- insatisfConj. Función que determina su un conjunto de formulas es insatisfacible
 insatisfConj:: [Prop] -> Bool
 insatisfConj (p:ps)
-	|(satisfConj (p:ps) ==True) =False
-	| otherwise = True
+    |(satisfConj (p:ps) ==True) =False
+    |otherwise = True
 
 --consecuencia. Función que determina si una proposición es consecuencia
 --				del conjunto de premisas.
 consecuencia:: [Prop] -> Prop -> Bool
-consecuencia gamma phi = null [i | i <- estadosConj (phi : gamma),
-								satisfenConj i gamma,
-								not (satisfen i phi)]
+consecuencia gamma phi = null [i | i <- estadosConj (phi : gamma), satisfenConj i gamma, not (satisfen i phi)]
 
 --argCorrecto. Función que determina si un argumento es lógicamente
 --				correcto dadas las premisas.
