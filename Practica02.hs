@@ -1,5 +1,9 @@
-  --
---
+-- Equipo Dinamita
+-- Integrantes:
+--  Escobar Rosales Luis Maro
+--  Liera Montaño Miguel Ángel
+-- Práctica02
+
 module Practica02 where
 
 --Prop. Tipo de datos para proposiciones lógicas.
@@ -154,21 +158,27 @@ elimImpl(PEquiv p q)= PEquiv(elimImpl p)(elimImpl q)
 
 --14. deMorgan. Función que aplica las leyes de DeMorgan a una proposición.
 deMorgan :: Prop -> Prop
+deMorgan(PTrue)=PTrue
+deMorgan(PFalse)=PFalse
 deMorgan (PVar p)=PVar p
-deMorgan (PNeg (PVar p))= PNeg(PVar p)
-deMorgan(PNeg (PNeg p))= p
-deMorgan(PNeg (POr p q))= PAnd (deMorgan( PNeg p))(deMorgan(PNeg q))
-deMorgan(PNeg (PAnd p q))= POr (deMorgan (PNeg p))(deMorgan(PNeg q))
-deMorgan p = p
+deMorgan(POr p q)=POr(deMorgan (p))(deMorgan (q))
+deMorgan(PAnd p q)=PAnd(deMorgan (p))(deMorgan (q))
+deMorgan(PNeg PTrue)=PFalse
+deMorgan(PNeg PFalse)=PTrue
+deMorgan (PNeg (PVar p) )= (PNeg(PVar p))
+deMorgan(PNeg (PNeg p))= deMorgan (p)
+deMorgan(PNeg (POr p q))= (PAnd (deMorgan(PNeg p)) (deMorgan(PNeg q)))
+deMorgan(PNeg (PAnd p q)) = (POr (deMorgan (PNeg p))(deMorgan(PNeg q)))
 
 {-- Punto extra--}
 
+-- estadosConj. Funcion que devuelve los estados de un conjunto de formulas
 estadosConj :: [Prop] -> [Estado]
 estadosConj [] = []
 estadosConj [p] = estados p
 estadosConj (p:ps) = (estados p) ++ (estadosConj ps)
 
-
+-- unirlistas. Funcion auxiliar que une dos listas
 unirlistas:: Eq a=>[a]->[a]->[a]
 unirlistas b []=b
 unirlistas [] b= b
@@ -178,41 +188,39 @@ uniirlistas (x:xs) b
 	|elem x b = unirlistas xs b
 	|otherwise= x:unirlistas xs b
 
+-- modelosConj. Funcion que obtiene los modelos de un conjunto de formulas
 modelosConj :: [Prop] -> [Estado]
 modelosConj [p] = [i | i <- estadosConj [p], interpConj [i] [p] == True]
-{-- modelosConj [] =[]
-modelosConj [p]= modelos p
-modelosConj (p:ps)
-   |(contenido [(vars p)] (varsConj ps)) && (contenido (modelos p) (modelosConj ps)) = (modelos p) ++ (modelosConj ps)
-   |(contenido [(vars p)] (varsConj ps)) && not(contenido (modelos p) (modelosConj ps)) = []
-   |otherwise = []--}
 
+--  interpConj. Funcion que da la interpretacion de un conjunto de formulas dado un conjunto de estados
 interpConj :: [Estado] -> [Prop] -> Bool
 interpConj [] [p] = interp [] p
 interpConj [e] [p] = interp e p
 interpConj [e] (p:ps) = (interp e p) && (interpConj [e] ps)
 interpConj (x:xs) (y:ys) = (interp x y) && (interpConj [x] ys) && (interpConj xs [y]) && (interpConj xs ys)
 
+-- varsConj. Funcion auxiliar que obtiene las vaiables de un conjunto de formulas
 varsConj :: [Prop] -> [Estado]
 varsConj [p] = eliminar [vars p]
 varsConj (p:ps) = eliminar ([(vars p)] ++ (varsConj ps))
 
+-- satisfenConj. Función que determina su un conjunto de formulas es satisfacible
 satisfenConj:: Estado -> [Prop] -> Bool
---satisfenConj e [] =
 satisfenConj e [p] = (satisfen e p)
 satisfenConj e (p:ps)= (satisfen e p) && (satisfenConj e ps)
 
+-- satisfConj. Función que determina su un conjunto de formulas es satisfacible
 satisfConj:: [Prop] -> Bool
 satisfConj [] = False
 satisfConj [p] = (satisf p)
--- satisfConj (p:ps) = contenido (modelos p) (satisfConj ps)
 
-
+-- insatisfenConj. Función que dado un estado determina su un conjunto de formulas es insatisfacible
 insatisfenConj:: Estado -> [Prop] -> Bool
 insatisfenConj e (p:ps)
 	|(satisfenConj e (p:ps)==True )=False
 	|otherwise =True
 
+-- insatisfConj. Función que determina su un conjunto de formulas es insatisfacible
 insatisfConj:: [Prop] -> Bool
 insatisfConj (p:ps)
 	|(satisfConj (p:ps) ==True) =False
