@@ -34,6 +34,7 @@ fnc (PAnd p q) = PAnd (fnc (fnn p)) (fnc (fnn q))
 distr :: Prop -> Prop -> Prop
 distr p q
     | esLiteral p && esLiteral q = POr p q
+    | (p == PAnd a b) = PAnd (POr a q) (POr a b)
     | otherwise = POr p q
 
 {----- Algoritmo DPLL -----}
@@ -45,10 +46,23 @@ type Formula = [Clausula]
 type Modelo = [Literal]
 type Solucion = (Modelo, Formula)
 
-
 -- 3. unit. Función que aplica la regla unitaria.
 unit :: Solucion -> Solucion
-unit (m, f) = error "Sin implementar."
+unit (m, f) = (m ++ [ms | ms <- literales f], elimLiterales   f)
+
+elimLiterales :: Formula -> Formula
+elimLiterales f = [c | c <- f, not (esLiteral1 c)]
+
+literales :: [Clausula] -> [Literal]
+literales [] = []
+literales [c] = [l | l <- c, esLiteral l]
+literales (c:cs) = [l | l <- c, esLiteral l] ++ literales cs
+
+clausulas :: Formula -> [Clausula]
+clausulas f = [c | c <- f, esLiteral1 c]
+
+esLiteral1 :: Clausula -> Bool
+esLiteral1 [l] = length [l] == 1 && esLiteral l
 
 -- 4. elim. Función que aplica la regla de eliminación.
 elim :: Solucion -> Solucion
