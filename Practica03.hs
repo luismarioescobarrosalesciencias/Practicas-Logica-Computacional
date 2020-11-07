@@ -34,8 +34,13 @@ fnc (PAnd p q) = PAnd (fnc (fnn p)) (fnc (fnn q))
 distr :: Prop -> Prop -> Prop
 distr p q
     | esLiteral p && esLiteral q = POr p q
-    | (p == PAnd a b) = PAnd (POr a q) (POr a b)
-    | otherwise = POr p q
+    | otherwise = distrAux p q
+
+distrAux :: Prop -> Prop -> Prop
+distrAux (PAnd a b) q = PAnd (distr a q) (distr b q)
+distrAux p (PAnd c d) = PAnd (distr p c) (distr p d)
+distrAux (POr a b) q = POr (POr a b) q
+distrAux p (PAnd c d) = POr p (POr c d)
 
 {----- Algoritmo DPLL -----}
 
@@ -66,11 +71,20 @@ esLiteral1 [l] = length [l] == 1 && esLiteral l
 
 -- 4. elim. Función que aplica la regla de eliminación.
 elim :: Solucion -> Solucion
-elim (m, f) = error "Sin implementar."
+elim (m, f) = (m, [c | c <- f, elimAux m c])
+
+elimAux :: Eq Literal => Modelo -> Clausula -> Clausula
+elimAux m c = [l | l <- c, not (l `elem` m)]
 
 -- 5. red. Función que aplica la regla de reducción.
 red :: Solucion -> Solucion
 red (m, f) = error "Sin implementar."
+
+--redAux :: Eq Literal => Modelo -> Clausula -> Clausula
+--redAux m c = [l | l <- c, (l `elem` m)]
+
+--complemento :: Eq Literal => Literal -> Modelo -> Bool
+--complemento
 
 -- 6. split. Función que aplica la regla de la partición de una literal.
 --            Se debe tomar la primer literal que aparezca en la fórmula.
@@ -79,16 +93,17 @@ split (m, f) = error "Sin implementar."
 
 -- 7. conflict. Función que determina si la Solucion llegó a una contradicción.
 conflict :: Solucion -> Bool
+--conflict (m, f) = not (success (m,f))
 conflict (m, f) = error "Sin implementar."
-
 -- 8. success. Función que determina si la fórmula es satisfacible.
 success :: Solucion -> Bool
 success (m, f) = error "Sin implementar."
+--    | f == [] = True
+--    | otherwise = false
 
 --9. appDPLL. Función que aplica las reglas anteriores una vez.
 appDPLL :: Solucion -> Solucion
 appDPLL (m, f) = error "Sin implementar."
-
 
 
 {-- Puntos Extra --}
