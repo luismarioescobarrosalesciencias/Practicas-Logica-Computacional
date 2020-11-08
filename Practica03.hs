@@ -70,11 +70,13 @@ esLiteral1 :: Clausula -> Bool
 esLiteral1 [l] = length [l] == 1 && esLiteral l
 
 -- 4. elim. Función que aplica la regla de eliminación.
---elim :: Solucion -> Solucion
---elim (m, f) = (m, [c | c <- f, elimAux m c])
+elim :: Solucion -> Solucion
+elim (m,f) = (m ,elimAux m f)
 
---elimAux :: Eq Literal => Modelo -> Clausula -> Clausula
---elimAux m c = [l | l <- c, not (l `elem` m)]
+elimAux :: Modelo -> [Clausula] -> [Clausula]
+elimAux m [] = []
+elimAux m [c] = [[l | l <- c, not (l `elem` m)]]
+elimAux m (c:cs) = [[l | l <- c, not (l `elem` m)]] ++ elimAux m cs
 
 -- 5. red. Función que aplica la regla de reducción.
 red :: Solucion -> Solucion
