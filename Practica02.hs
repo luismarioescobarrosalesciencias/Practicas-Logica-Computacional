@@ -9,6 +9,7 @@ module Practica02 where
 --Prop. Tipo de datos para proposiciones lógicas.
 data Prop = PTrue | PFalse | PVar String | PNeg Prop | POr Prop Prop
                   | PAnd Prop Prop | PImpl Prop Prop | PEquiv Prop Prop
+    deriving(Eq)
 
 --Estado. Lista de variables asignadas como verdaderas.
 type Estado = [String]

@@ -70,11 +70,11 @@ esLiteral1 :: Clausula -> Bool
 esLiteral1 [l] = length [l] == 1 && esLiteral l
 
 -- 4. elim. Función que aplica la regla de eliminación.
-elim :: Solucion -> Solucion
-elim (m, f) = (m, [c | c <- f, elimAux m c])
+--elim :: Solucion -> Solucion
+--elim (m, f) = (m, [c | c <- f, elimAux m c])
 
-elimAux :: Eq Literal => Modelo -> Clausula -> Clausula
-elimAux m c = [l | l <- c, not (l `elem` m)]
+--elimAux :: Eq Literal => Modelo -> Clausula -> Clausula
+--elimAux m c = [l | l <- c, not (l `elem` m)]
 
 -- 5. red. Función que aplica la regla de reducción.
 red :: Solucion -> Solucion
@@ -112,3 +112,33 @@ appDPLL (m, f) = error "Sin implementar."
 dpll :: Solucion -> Solucion
 dpll (m, f) = error "Sin implementar."
 --}
+
+--creo que esta ya la habamos hecho
+estacontenido:: Eq a=>[a]->[a]->Bool
+estacontenido [] list=True  --La nocion es que el vacio esta contenido en cualquier conjunto, en este caso lista
+estacontenido (x:xs) list= x `elem` list && estacontenido xs list
+
+diferencialistas ::  Eq a => [a] -> [a] -> [a]
+diferencialistas lista1 lista2 = [x | x <- lista1, noElemento x lista2]
+
+noElemento :: Eq a => a -> [a] -> Bool
+noElemento x list=not(elem x list)
+
+--listasiguales::tacontenido:: Eq a=>[a]->[a]->Bool
+--listasiguales lista1 []=False
+--listasiguales lista1 lista2
+--	|diferencialistas(lista1 lista2)=[]=true
+--	|otherwise False
+
+listasiguales :: Eq a=>[a]->[a]->Bool
+listasiguales lista1 lista2 = (estacontenido lista1 lista2) && (estacontenido lista1 lista2)
+
+sonIgualesProp :: Prop -> Prop -> Bool
+sonIgualesProp p q
+    | (esNegacion (deMorgan p)) && (esNegacion (deMorgan q)) = (esLiteral p) && (esLiteral q) && (listasiguales (vars p) (vars q))
+    | not (esNegacion p) && not (esNegacion q) = (esLiteral p) && (esLiteral q) && (listasiguales (vars p) (vars q))
+    | otherwise = False
+
+esNegacion :: Prop -> Bool
+esNegacion (PNeg p) = True
+esNegacion p = False
