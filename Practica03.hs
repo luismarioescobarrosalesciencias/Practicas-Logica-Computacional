@@ -75,8 +75,27 @@ elim (m,f) = (m ,elimAux m f)
 
 elimAux :: Modelo -> [Clausula] -> [Clausula]
 elimAux m [] = []
-elimAux m [c] = [[l | l <- c, not (l `elem` m)]]
-elimAux m (c:cs) = [[l | l <- c, not (l `elem` m)]] ++ elimAux m cs
+elimAux [] [] = []
+elimAux [] f = f
+elimAux m [c]
+    | elemIgual m c = []
+    | otherwise = [c]
+elimAux m (c:cs)
+    | elemIgual m c = [] ++ (elimAux m cs)
+    | otherwise = [c] ++ (elimAux m cs)
+
+
+
+--elimAux m [] = []
+--elimAux m [c] = [[l | l <- c, not (l `elem` m)]]
+--elimAux m (c:cs) = [[l | l <- c, not (l `elem` m)]] ++ elimAux m cs
+
+elemIgual :: Eq a => [a] -> [a] -> Bool
+elemIgual l [] = False
+elemIgual l [x]
+    | x `elem` l = True
+    | otherwise = False
+elemIgual l (x:xs) = (elemIgual l [x]) || (elemIgual l xs)
 
 -- 5. red. Función que aplica la regla de reducción.
 red :: Solucion -> Solucion
