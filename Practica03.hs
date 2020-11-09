@@ -18,6 +18,8 @@ fnn (PNeg p)
     |otherwise = deMorgan (PNeg (fnn (elimEquiv (elimImpl p))))
 fnn (POr p q) = POr (fnn (elimEquiv (elimImpl p))) (fnn (elimEquiv (elimImpl q)))
 fnn (PAnd p q) = PAnd (fnn (elimEquiv (elimImpl p))) (fnn (elimEquiv (elimImpl q)))
+fnn (PImpl p q) = fnn (elimImpl (PImpl p q))
+fnn (PEquiv p q) = fnn (elimEquiv (PEquiv p q))
 
 esLiteral :: Prop -> Bool
 esLiteral p
@@ -28,8 +30,13 @@ esLiteral p
 --         proposición.
 fnc :: Prop -> Prop
 fnc (PVar p) = (PVar p)
-fnc (POr p q) = POr (fnc (fnn p)) (fnc (fnn q))
-fnc (PAnd p q) = PAnd (fnc (fnn p)) (fnc (fnn q))
+fnc (PNeg p)
+    |esLiteral p = (PNeg p)
+    |otherwise = fnc (deMorgan (PNeg ((elimEquiv (elimImpl p)))))
+fnc (POr p q) = distr (fnc (elimEquiv (elimImpl p))) (fnc (elimEquiv (elimImpl q)))
+fnc (PAnd p q) = PAnd (fnc (fnn (elimEquiv (elimImpl p)))) (fnc (fnn (elimEquiv (elimImpl q))))
+fnc (PImpl p q) = fnc (elimImpl (PImpl p q))
+fnc (PEquiv p q) = fnc (elimEquiv (PEquiv p q))
 
 distr :: Prop -> Prop -> Prop
 distr p q
@@ -40,7 +47,7 @@ distrAux :: Prop -> Prop -> Prop
 distrAux (PAnd a b) q = PAnd (distr a q) (distr b q)
 distrAux p (PAnd c d) = PAnd (distr p c) (distr p d)
 distrAux (POr a b) q = POr (POr a b) q
-distrAux p (PAnd c d) = POr p (POr c d)
+distrAux p (POr c d) = POr p (POr c d)
 
 {----- Algoritmo DPLL -----}
 
@@ -53,49 +60,47 @@ type Solucion = (Modelo, Formula)
 
 -- 3. unit. Función que aplica la regla unitaria.
 unit :: Solucion -> Solucion
-unit (m, f) = (m ++ [ms | ms <- literales f], elimLiterales   f)
+unit (m, f) = (m ++ [ms | ms <- literales f], elimLiterales f)
 
+-- elimLiterales. Funcion auxiliar qeu elimina las literales de una formula.
 elimLiterales :: Formula -> Formula
-elimLiterales f = [c | c <- f, not (esLiteral1 c)]
+elimLiterales f = [c | c <- f, not (esLiteralC c)]
 
-literales :: [Clausula] -> [Literal]
+-- literales. Funcion auxiliar que devuelve el conjunto de literales de una
+--            fórmula.
+literales :: Formula -> [Literal]
 literales [] = []
-literales [c] = [l | l <- c, esLiteral l]
-literales (c:cs) = [l | l <- c, esLiteral l] ++ literales cs
+literales [c] = [l | l <- c, esLiteralC c]
+literales (c:cs) = [l | l <- c, esLiteralC c] ++ literales cs
 
-clausulas :: Formula -> [Clausula]
-clausulas f = [c | c <- f, esLiteral1 c]
-
-esLiteral1 :: Clausula -> Bool
-esLiteral1 [l] = length [l] == 1 && esLiteral l
+-- esLiteralC. Funcion auxiiar que determina si una clausula es una literal
+esLiteralC :: Clausula -> Bool
+esLiteralC c = length c == 1
 
 -- 4. elim. Función que aplica la regla de eliminación.
 elim :: Solucion -> Solucion
 elim (m,f) = (m ,elimAux m f)
 
+-- elimAux. Funcion auxiliar que elimina las literales de la formula que se
+--         encuentran en el modelo
 elimAux :: Modelo -> [Clausula] -> [Clausula]
 elimAux m [] = []
-elimAux [] [] = []
 elimAux [] f = f
 elimAux m [c]
-    | elemIgual m c = []
+    | elemEnComun m c = []
     | otherwise = [c]
 elimAux m (c:cs)
-    | elemIgual m c = [] ++ (elimAux m cs)
+    | elemEnComun m c = [] ++ (elimAux m cs)
     | otherwise = [c] ++ (elimAux m cs)
 
-
-
---elimAux m [] = []
---elimAux m [c] = [[l | l <- c, not (l `elem` m)]]
---elimAux m (c:cs) = [[l | l <- c, not (l `elem` m)]] ++ elimAux m cs
-
-elemIgual :: Eq a => [a] -> [a] -> Bool
-elemIgual l [] = False
-elemIgual l [x]
+-- elemEnComun. Funcion auxiliar que determina si dos listas tienen al menos
+--              un elemento en comun
+elemEnComun :: Eq a => [a] -> [a] -> Bool
+elemEnComun l [] = False
+elemEnComun l [x]
     | x `elem` l = True
     | otherwise = False
-elemIgual l (x:xs) = (elemIgual l [x]) || (elemIgual l xs)
+elemEnComun l (x:xs) = (elemEnComun l [x]) || (elemEnComun l xs)
 
 -- 5. red. Función que aplica la regla de reducción.
 red :: Solucion -> Solucion
