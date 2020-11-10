@@ -59,19 +59,38 @@ type Modelo = [Literal]
 type Solucion = (Modelo, Formula)
 
 -- 3. unit. Función que aplica la regla unitaria.
+--unit :: Solucion -> Solucion
+--unit (m, f) = (eliminar (m ++ [ms | ms <- literales f]), elimLiterales f)
+
 unit :: Solucion -> Solucion
-unit (m, f) = (m ++ [ms | ms <- literales f], elimLiterales f)
+unit (m,f) = ( eliminar (m ++ [ms | ms <- literalF f]), elimLiteral f)
 
 -- elimLiterales. Funcion auxiliar qeu elimina las literales de una formula.
-elimLiterales :: Formula -> Formula
-elimLiterales f = [c | c <- f, not (esLiteralC c)]
+--elimLiterales :: Formula -> Formula
+--elimLiterales f = [c | c <- f, not (esLiteralC c)]
+
+-- elimLiteral. Funcion auxiliar que elimina la primera literal de una formula
+elimLiteral :: Formula -> Formula
+elimLiteral [] = []
+elimLiteral [c]
+    | esLiteralC c = []
+    | otherwise = [c]
+elimLiteral (c:cs)
+    | esLiteralC c = cs
+    | otherwise = [c] ++ elimLiteral cs
 
 -- literales. Funcion auxiliar que devuelve el conjunto de literales de una
 --            fórmula.
-literales :: Formula -> [Literal]
-literales [] = []
-literales [c] = [l | l <- c, esLiteralC c]
-literales (c:cs) = [l | l <- c, esLiteralC c] ++ literales cs
+--literales :: Formula -> [Literal]
+--literales [] = []
+--literales [c] = [l | l <- c, esLiteralC c]
+--literales (c:cs) = [l | l <- c, esLiteralC c] ++ literales cs
+
+-- literalF. Funcion auxiliar que devuelve la primera literal de una formula
+literalF :: Formula -> [Literal]
+literalF [] = []
+literalF [c] = [l | l <- c, esLiteralC c]
+literalF (c:cs) = [l | l <- c, esLiteralC c]
 
 -- esLiteralC. Funcion auxiiar que determina si una clausula es una literal
 esLiteralC :: Clausula -> Bool
