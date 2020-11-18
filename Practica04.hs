@@ -118,7 +118,37 @@ remover (x:xs) listaaux
 
 --sustTerm. Función que realiza la sustitución de variables en un término.
 sustTerm :: Term -> Subst -> Term
-sustTerm t s = error "Sin implementar."
+--sustTerm [] s = s
+sustTerm t [] = t
+sustTerm (V x) [(v,ts)]
+    | listasiguales x v = ts
+    | otherwise = (V x)
+sustTerm (F f t) s = (F f (sustTermAux t s))
+
+--{
+--sustTermAux :: [Term] -> Subst -> [Term]
+-- sustTermAux [t] [(v,ts)] = [sustTerm t [(v,ts)]]
+--sustTermAux (t:tc) [(v,ts)] = [sustTerm t [(v,ts)]] ++ sustTermAux tc [(v,ts)]
+-- sustTermAux (x:xs) (y:ys)
+    -- | sustTermAux [x] [y] == [x] = sustTermAux [x] ys ++ sustTermAux xs [y] ++ sustTermAux xs ys
+    -- | otherwise = sustTermAux [x] [y] ++ sustTermAux [x] ys ++ sustTermAux xs [y] ++ sustTermAux xs ys
+
+
+--contiene. Función auxiliar que verifica si una lista contiene o no a un
+--          elemento
+
+estacontenido:: Eq a=>[a]->[a]->Bool
+estacontenido [] list=True  --La nocion es que el vacio esta contenido en cualquier conjunto, en este caso lista
+estacontenido (x:xs) list= x `elem` list && estacontenido xs list
+
+listasiguales :: Eq a=>[a]->[a]->Bool
+listasiguales lista1 lista2 = (estacontenido lista1 lista2) && (estacontenido lista1 lista2)
+
+contiene :: Eq a => a -> [a] -> Bool
+contiene x [] = False
+contiene x (y:b)
+    | x == y = True
+    | otherwise = contiene x b
 
 --sustForm. Función que realiza la sustitución de variables en una
 --          fórmula sin renombramientos.
