@@ -95,6 +95,7 @@ varsForm (All p f) = [p] ++ varsForm f
 -- varsTerm. Funcion auxiliar que calcula las variables de un termino
 varsTerm :: Term -> [Nombre]
 varsTerm (V x) = [x]
+varsTerm(F f [])=[]
 varsTerm (F f [t]) = varsTerm t
 varsTerm (F f (t:ts)) = varsTerm t ++ varsTermConj ts
 
@@ -118,24 +119,23 @@ remover (x:xs) listaaux
 
 --sustTerm. Función que realiza la sustitución de variables en un término.
 sustTerm :: Term -> Subst -> Term
---sustTerm [] s = s
 sustTerm t [] = t
 sustTerm (V x) [(v,ts)]
-    | listasiguales x v = ts
-    | otherwise = (V x)
-sustTerm (F f t) s = (F f (sustTermAux t s))
+	| listasiguales x v = ts
+	| otherwise = (V x)
+--Idea: Var x [x1,x2,x3,:=t1,t2,t3]
+sustTerm (V x) (y:ys)
+	|x==fst y=snd y
+	|otherwise=sustTerm (V x) ys 
+sustTerm (F f []) _ = F f [] --idea f[] [xi:=t1]=f[ ]
+--idea f(a,b,c,d,i(g))[a,b,c:=t1,t2,t3]
+	--F "b"[....] [(v,t1),(m,t2).....]
+sustTerm(F f ts) s =F f (susFAux ts s) where 
+	susFAux [] s=[]
+	susFAux (t:ts) s=((sustTerm t s):susFAux ts s)
 
---{
---sustTermAux :: [Term] -> Subst -> [Term]
--- sustTermAux [t] [(v,ts)] = [sustTerm t [(v,ts)]]
---sustTermAux (t:tc) [(v,ts)] = [sustTerm t [(v,ts)]] ++ sustTermAux tc [(v,ts)]
--- sustTermAux (x:xs) (y:ys)
-    -- | sustTermAux [x] [y] == [x] = sustTermAux [x] ys ++ sustTermAux xs [y] ++ sustTermAux xs ys
-    -- | otherwise = sustTermAux [x] [y] ++ sustTermAux [x] ys ++ sustTermAux xs [y] ++ sustTermAux xs ys
-
-
---contiene. Función auxiliar que verifica si una lista contiene o no a un
---          elemento
+--fst ,snd
+	-- fst (a,b)=a snd(a,b)=b
 
 estacontenido:: Eq a=>[a]->[a]->Bool
 estacontenido [] list=True  --La nocion es que el vacio esta contenido en cualquier conjunto, en este caso lista
@@ -143,6 +143,9 @@ estacontenido (x:xs) list= x `elem` list && estacontenido xs list
 
 listasiguales :: Eq a=>[a]->[a]->Bool
 listasiguales lista1 lista2 = (estacontenido lista1 lista2) && (estacontenido lista1 lista2)
+
+--contiene. Función auxiliar que verifica si una lista contiene o no a un
+--          elemento
 
 contiene :: Eq a => a -> [a] -> Bool
 contiene x [] = False
@@ -153,7 +156,51 @@ contiene x (y:b)
 --sustForm. Función que realiza la sustitución de variables en una
 --          fórmula sin renombramientos.
 sustForm :: Form -> Subst -> Form
-sustForm f s = error "Sin implementar."
+sustForm NForm s = NForm
+sustForm TrueF s = TrueF
+sustForm FalseF s = FalseF
+--P(t1, . . . , tm)[xi :=si ] = P(t1[x1:=s1].......tn[xn:=sn])
+sustForm (Pr p t) s = Pr p [sustTerm v s |v<-t]
+sustForm (Eq t1 t2) s =  ( Eq (sustTerm t1 s) (sustTerm t2 s) )
+sustForm (Neg f) s = (Neg (sustForm f s))
+sustForm (Conj f1 f2) s = (Conj (sustForm f1 s) (sustForm f2 s))
+sustForm (Disy f1 f2) s =(Disy (sustForm f1 s) (sustForm f2 s)) 
+sustForm (Imp f1 f2) s = (Imp (sustForm f1 s) (sustForm f2 s))
+sustForm (Equi f1 f2) s =(Equi (sustForm f1 s) (sustForm f2 s))
+sustForm (Ex x f) s 
+	| fv(Ex x f)==[]=(Ex x f)
+	| contiene x (union(listavarSus s)(varsTermConj(listatermSus s)))==False = (Ex x(sustForm f s))  --(Ey phi)[xi:=t1] y no es elemento de xi U de vars(ti) 
+	|otherwise =(Ex x f)	
+sustForm  (All x f) s 
+	| fv(All x f)==[]=(All x f)
+	| contiene x (union(listavarSus s)(varsTermConj(listatermSus s)))==False = (All x(sustForm f s))
+	| otherwise=(All x f)
+--sustForm (All "x" (Ex "y" (Pr "P" [V "x", V "y", V "z"]))) [("z", F "a" [])]
+--(Ex "x" (Pr "P" [V "x", V "y"]))
+--sustForm (All "f" (Ex "m" (Pr "P" [V "x", V "y", V "z"]))) [("z", F "a" []),("y",V "v"),("x",V "r")]
+
+interseccion::Eq a=>[a]->[a]->[a]
+interseccion [] l1=[]
+interseccion l2 []=[]
+interseccion l1 l2=[l| l<-l1, l`elem` l2]
+
+--[("x", V "y"),("m", V "y"),("d", V "y")]
+--varsTermConj(listatermSus([("x",F "f" [V "x", F "a" []])]))
+listavarSus::Subst->[Nombre]
+listavarSus []=[]
+listavarSus [s]=[fst s]
+listavarSus (s:ss)=fst s:(listavarSus ss)
+
+--listatermSus([("x", V "y"),("m",F "f" [V "x", F "a" []])])
+--varsTermConj(listatermSus([("x",F "f" [V "x", F "a" [V "y"]])]))
+listatermSus::Subst->[Term]
+listatermSus []=[]
+listatermSus [s]=[snd s]
+listatermSus (s:ss)=snd s:(listatermSus ss)
+
+--F "f" [V "x", F "a" []]
+union :: Eq a => [a] -> [a] -> [a]
+union xs ys = xs ++ [y | y <- ys, y `notElem` xs]
 
 --alphaEq. Función que dice si dos fórmulas son alpha-equivalentes.
 alphaEq :: Form -> Form -> Bool
@@ -161,8 +208,11 @@ alphaEq f1 f2 = error "Sin implementar."
 
 
 
-{-- Puntos Extra
+-- Puntos Extra
 renom :: Form -> Form
-renomConj :: Form -> Form
-sustFormAlpha :: Form -> Subst -> Form
---}
+renombraraux::Form->Nombre->Nombre->Form
+renombrarTermino::Form->Nombre->Nombre->Form
+
+--renomConj :: Form -> Form
+--sustFormAlpha :: Form -> Subst -> Form
+--
