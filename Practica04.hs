@@ -203,16 +203,69 @@ union :: Eq a => [a] -> [a] -> [a]
 union xs ys = xs ++ [y | y <- ys, y `notElem` xs]
 
 --alphaEq. Función que dice si dos fórmulas son alpha-equivalentes.
-alphaEq :: Form -> Form -> Bool
-alphaEq f1 f2 = error "Sin implementar."
+--alphaEq :: Form -> Form -> Bool
+--alphaEq f1 f2 =si interseccion fv(f1 )fv(f2) ==[] || not(fv(f1)==fv(f2))=false
+--
+
+--vAlfaEq :: Form -> Form -> Bool
+--vAlfaEq f1 f2
+--	| fv(f1) == fv(f2) && sonIguales (bv(f1)) (bv(f2)) && alcance(f1)==alcance(f2) && varsForm()varsform()=True
+--	| fv(f1) == fv(f2) = sonDiferentes (bv(f1)) (bv(f2))
+--	| otherwise=False
+
+-- Funcion auxiliar. Dadas dos listas de nombres de variables nos dice si son diferentes.
+sonDiferentes :: [Nombre] -> [Nombre] -> Bool
+sonDiferentes [] [] = False
+sonDiferentes [x] l
+    | elem x l = False
+    | otherwise = True
+sonDiferentes (x:xs) l = sonDiferentes [x] l && sonDiferentes xs l
 
 
+esCuantF::Form -> Bool
+esCuantF (All _ _) = True
+esCuantF (Ex _ _) = True
+esCuantF _ = False
+
+--vAlfaEq (Ex "y" (Pr "P" [V "w", V "z"])) (Ex "y" (Pr "P" [V "x", V "z"]))
+--cuantificacionequals::Form->Bool
+--si recibe Vap1 Vwp2 si p1==p2 entonces true else false 
 
 -- Puntos Extra
 renom :: Form -> Form
-renombraraux::Form->Nombre->Nombre->Form
-renombrarTermino::Form->Nombre->Nombre->Form
+renom TrueF  = TrueF
+renom FalseF  = FalseF
+renom (Pr p ts) = (Pr p ts)
+renom (Eq t1 t2) = (Eq t1 t2)
+renom (Neg t)  = Neg (renom t)
+renom (Conj t1 t2) = Conj (renom t1) (renom t2)
+renom (Disy t1 t2) = Disy (renom t1) (renom t2)
+renom (Imp t1 t2) = Imp (renom t1) (renom t2)
+renom (Equi t1 t2) = Equi (renom t1) (renom t2)
+renom (All n f) = (All (n++"s0") (renom(sustForm f [(n,V (n++"s0"))])))
+renom (Ex n f) = (Ex (n++"s0") (renom(sustForm f [(n,V (n++"s0"))])))
 
---renomConj :: Form -> Form
---sustFormAlpha :: Form -> Subst -> Form
---
+renomConj :: Form -> Form
+renomConj p=renauxconj p (fv(p))
+
+-- Función que renombra la variables ligadas de una fórmula donde sus  nombres s ajenos a los de una lista dada.
+renauxconj :: Form -> [Nombre] -> Form
+renauxconj TrueF l = TrueF
+renauxconj FalseF  l = FalseF
+renauxconj (Pr p ts)l  = (Pr p ts)
+renauxconj (Eq t1 t2) l = (Eq t1 t2)
+renauxconj (Neg t)  l = Neg (renauxconj t l)
+renauxconj (Conj t1 t2) l = Conj (renauxconj t1 l) (renauxconj t2 l)
+renauxconj (Disy t1 t2) l = Disy (renauxconj t1 l) (renauxconj t2 l)
+renauxconj (Imp t1 t2) l = Imp (renauxconj t1 l) (renauxconj t2 l)
+renauxconj (Equi t1 t2) l = Equi (renauxconj t1 l) (renauxconj t2 l)
+renauxconj (All n f) l = if(not (elem (n++"s0") l ) ) 
+                        then (All (n++"s0") (renom(sustForm f [(n,V (n++"s0"))])))
+                        else renauxconj (All (n++"s0") (renom(sustForm f [(n,V (n++"s0"))]))) l
+renauxconj (Ex n f) l = if(not (elem (n++"s0") l ) ) 
+                        then (Ex (n++"s0") (renom(sustForm f [(n,V (n++"s0"))])))
+                        else renauxconj (All (n++"s0") (renom(sustForm f [(n,V (n++"s0"))]))) l
+
+sustFormAlpha :: Form -> Subst -> Form
+sustFormAlpha p s=sustForm(renauxconj p ((listavarSus s)++(fv p))) s
+
