@@ -203,9 +203,55 @@ union :: Eq a => [a] -> [a] -> [a]
 union xs ys = xs ++ [y | y <- ys, y `notElem` xs]
 
 --alphaEq. Función que dice si dos fórmulas son alpha-equivalentes.
---alphaEq :: Form -> Form -> Bool
---alphaEq f1 f2 =si interseccion fv(f1 )fv(f2) ==[] || not(fv(f1)==fv(f2))=false
+alphaEq :: Form -> Form -> Bool
+alphaEq f1 f2 = listasiguales (fv f1) (fv f2) && (formulasEq f1 f2)
 --
+--Compara formulas
+formulasEq :: Form -> Form -> Bool
+formulasEq NForm NForm = True
+formulasEq NForm g = False
+formulasEq TrueF TrueF = True
+formulasEq TrueF g = True
+formulasEq FalseF FalseF = True
+formulasEq FalseF g = False
+formulasEq (Pr p1 t1) (Pr p2 t2) = True && (terminosEqConj t1 t2)
+formulasEq (Pr p t) g = False
+formulasEq (Eq f1 f2) (Eq g1 g2) =  True && (terminosEq f1 g1) && (terminosEq f2 g2)
+formulasEq (Eq f1 f2) g = False
+formulasEq (Neg f) (Neg g) = True && (formulasEq f g)
+formulasEq (Neg f) g = False
+formulasEq (Conj f1 f2) (Conj g1 g2) = True && (formulasEq f1 g1) && (formulasEq f2 g2)
+formulasEq (Conj f1 f2) f = False
+formulasEq (Disy f1 f2) (Disy g1 g2) = True && (formulasEq f1 g1) && (formulasEq f2 g2)
+formulasEq (Disy f1 f2) f = False
+formulasEq (Imp f1 f2) (Imp g1 g2) = True && (formulasEq f1 g1) && (formulasEq f2 g2)
+formulasEq (Imp f1 f2) f = False
+formulasEq (Equi f1 f2) (Equi g1 g2) = True && (formulasEq f1 g1) && (formulasEq f2 g2)
+formulasEq (Equi f1 f2) f = False
+formulasEq (Ex x f) (Ex y g) = True && (formulasEq f g)
+formulasEq (Ex x f) g = False
+formulasEq (All x f) (All y g) = True && (formulasEq f g)
+formulasEq (All x f) g = False
+
+--Compara terminos 
+terminosEq :: Term -> Term -> Bool
+terminosEq (V x) (V y) = True
+terminosEq (V x) t = False
+terminosEq (F f1 t1) (F f2 t2) = True && terminosEqConj t1 t2
+terminosEq (F f1 t1) t = False
+
+--Compara listas de terminos 
+terminosEqConj :: [Term] -> [Term] -> Bool
+terminosEqConj [] [] = True
+terminosEqConj [] t = False
+terminosEqConj t [] = False
+terminosEqConj [a] [b] = terminosEq a b
+terminosEqConj [a] (y:ys) = (terminosEq a y) && terminosEqConj [a] ys
+terminosEqConj (x:xs) [b] = (terminosEq x b) && (terminosEqConj xs [b])
+terminosEqConj (x:xs) (y:ys) = (terminosEqConj [x] [y]) && (terminosEqConj [x] ys) && (terminosEqConj xs [y]) && (terminosEqConj xs ys)
+
+
+
 
 --vAlfaEq :: Form -> Form -> Bool
 --vAlfaEq f1 f2
@@ -268,4 +314,5 @@ renauxconj (Ex n f) l = if(not (elem (n++"s0") l ) )
 
 sustFormAlpha :: Form -> Subst -> Form
 sustFormAlpha p s=sustForm(renauxconj p ((listavarSus s)++(fv p))) s
+
 
