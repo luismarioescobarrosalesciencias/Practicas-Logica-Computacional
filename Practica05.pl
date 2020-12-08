@@ -33,3 +33,13 @@ ocurrir([X],X,1).
 ocurrir([Y],X,0).
 ocurrir([X|XS],X,NumVeces) :- ocurrir(XS,X,S), NumVeces is 1 + S.
 ocurrir([_|YS],X,NumVeces) :- ocurrir(YS,X,S), NumVeces is S.
+
+app([], List, List).
+app([Head|Tail], List, [Head|Rest]) :- app(Tail, List, Rest).
+
+my_append([], Cs, Cs).
+my_append([A|As],Bs,[A|Cs]):- my_append(As, Bs, Cs).
+
+inorden(empty,[]).
+inorden(tree(X, empty, empty), [X]).
+inorden(tree(Y, L, R),S) :- inorden(L,InoL), inorden(R,InoR), conc(InoL,Y,M), conc(M,InoR,S).
