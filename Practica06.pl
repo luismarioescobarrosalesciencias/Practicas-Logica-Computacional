@@ -10,6 +10,7 @@ conc([X|D],B,[X|E]) :- conc(D,B,E).
 
 dic(tree, arbol).
 dic(cup, taza).
+dic(maestro, teacher).
 
 matematico(pepe).
 sabemate(X) :- matematico(X).
@@ -30,4 +31,7 @@ bloqueado(X) :- not(hastaArriba(X)).
 
 hastaAbajo(X) :- sobre(X,nada).
 
-mover(X,Y) :- not(bloqueado(X)), hastaArriba(Y).
+mover(X,Y) :- not(bloqueado(X)), hastaArriba(Y), quitar(X,N), sobre(X,Y).
+
+quitar(X,Y) :- not(bloqueado(X)), sobre(nada,Y).
+abajo(Y,X) :- sobre(X,Y).
