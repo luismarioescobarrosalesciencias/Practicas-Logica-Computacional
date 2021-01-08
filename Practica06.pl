@@ -31,7 +31,7 @@ bloqueado(X) :- not(hastaArriba(X)).
 
 hastaAbajo(X) :- sobre(X,nada).
 
-mover(X,Y) :- not(bloqueado(X)), hastaArriba(Y), quitar(X,N), sobre(X,Y).
+mover(X,Y) :- not(bloqueado(X)), hastaArriba(Y), quitar(X,Y), sobre(X,Y).
 
-quitar(X,Y) :- not(bloqueado(X)), sobre(nada,Y).
+quitar(X,Y) :- not(bloqueado(X)), sobre(X,Y).
 abajo(Y,X) :- sobre(X,Y).
