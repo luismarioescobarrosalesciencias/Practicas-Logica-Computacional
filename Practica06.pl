@@ -77,10 +77,10 @@ bloqueado(X) :- not(hastaArriba(X)).
 hastaAbajo(X) :- sobre(X,nada).
 
 %se mueve X sobre Y y el sobre() dentro del parenteis es la referencia actualizada.
-mover(X,Y,(sobre(X,Y))) :- not(bloqueado(X)), hastaArriba(Y).
+mover(X,Y,(N,sobre(X,Y))) :- quitar(sobre(X,_),N), not(bloqueado(X)), hastaArriba(Y).
 
 %quitarya esta bien implementado  quiarAux(estado anterior, estado despues de aplicar el predicado)
-quitarAux(sobre(X,Y),sobre(nada,Y)) :- not(bloqueado(X)), sobre(X,Y).
+quitar(sobre(X,Y),sobre(nada,Y)) :- not(bloqueado(X)), sobre(X,Y).
 
 %mover X sobre Y (estado de la pila donde estaba X, estado de la pila X sobre Y)
  %quitar(sobre(X,Z),sobre(nada,Z)).
