@@ -121,3 +121,11 @@ aceptar(S) :- aceptarAux(S,q0,q0).
 aceptarAux([],_,_) :- !,fail.
 aceptarAux([E],QI,QF) :- delta(QI,E,[QF]).
 aceptarAux([E|ES],QI,QF) :- delta(QI,E,[N]), aceptarAux(ES,N,QF).
+
+%Llegue al resultado ya que pense en una especie de camino que deberia de recorrerse
+% para llegar de un punto a otro. SI nos daban una lista, teniamos que descomponerla,
+% y verificar que partiendo de el estado inicial y con el primer elemento de la lista
+% de simbolos si el siguiente estado correspondia a dicho simbolo, y asi recursivamente
+% hasta llegar al estado final. Como aceptar solo recibe unalista, pensamos en aceptarAux
+% que recibe como referencia los estados inicial (el estado actual en el que se encuentra)
+% y el estado final que es al que se quiere llegar al final de descomponerla.
