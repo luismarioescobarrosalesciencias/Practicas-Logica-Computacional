@@ -95,26 +95,29 @@ quitar(sobre(X,Y),sobre(nada,Y)) :- not(bloqueado(X)), sobre(X,Y).
 %will_be(put(grey, on, green), ([grey|Stack1], [green|Stack2]), (Stack1, [grey,green|Stack2])).
 %mover(put(X, on, Y), ([X|Stack1], [Y|Stack2]), (Stack1, [X,Y|Stack2])).
 
-%sobre(X,Y,[X,N]) :- sobre(nada,Y,N).
+% 3. Automata Finito no Determinista.
 
-%sobre(X,[nada],[X,nada]).
-%sobre(X,[Y|D],[X|E]) :- sobre(Y,D,E).
+% Hechos sobre como esta integrado el automata.
+inicial(q0).
+final(q0).
+delta(q0,a,[q1]).
+delta(q0,b,[]).
+delta(q1,a,[]).
+delta(q1,b,[q2]).
+delta(q2,a,[q0]).
+delta(q2,a,[q3]).
+delta(q2,a,[q4]).
+delta(q2,b,[]).
+delta(q3,a,[q0]).
+delta(q3,b,[]).
+delta(q4,a,[q3]).
+delta(q4,b,[]).
 
-%sobre(X,Y,[X|Y]).
-%sobre(X,)
-%sobre(X,Y,N) :- sobre(X,)
-%mover((X,Y), (sobre(X,XS,[X|XS]), sobre(Y,YS,[Y|YS])), (sobre(XS,XS), sobre(X,Y))).
-%will_be(Command, Before_state, After_state)
+% aceptar. Relacion que determina si una lista de simbolos es aceptado por el automata.
+aceptar(S) :- aceptarAux(S,q0,q0).
 
-
-/*lista([]):-!.
-lista([_|Y]):-lista(Y).
-
-elimina(X,[X|T],T).
-my_remove_element(_, [], []).
-
-my_remove_element(Y, [Y|Xs], Zs):-
-          my_remove_element(Y, Xs, Zs), !.
-
-my_remove_element(X, [Y|Xs], [Y|Zs]):-
-          my_remove_element(X, Xs, Zs).*/
+% aceptarAux. Relación que determina si una lista de simbolos son aceptados por
+%             un estado inicial y un estado final.
+aceptarAux([],_,_) :- !,fail.
+aceptarAux([E],QI,QF) :- delta(QI,E,[QF]).
+aceptarAux([E|ES],QI,QF) :- delta(QI,E,[N]), aceptarAux(ES,N,QF).
