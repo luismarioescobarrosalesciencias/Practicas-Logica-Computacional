@@ -55,10 +55,12 @@ traducir([X|XS],[Y|YS]) :- dic(Y,X), traducir(XS,YS).
 % Probar ingles- español: traducir([hello,we_are,the,team,dynamite,of,logic,we_are,students,of,science],Y).
 
 
+% 2. Mundo de los cubos.
+% para hacer pruebas con este predicado: mover(amarillo,verde),luego verificar
+% sobre(nada,verde), sobre(nada,rosa).
 
-matematico(pepe).
-sabemate(X) :- matematico(X).
-
+% Hechos dinamicos que se pueden cambiar a lo largo de la ejecucion del programa.
+:- dynamic(sobre/2). % Indica que los hechos sobre() son de tipo dinamico.
 sobre(nada,amarillo).
 sobre(amarillo,rosa).
 sobre(rosa,nada).
@@ -69,31 +71,39 @@ sobre(gris,rojo).
 sobre(rojo,azul).
 sobre(azul,nada).
 
-
+% hastaArriba. Relación que indica si un cubo X esta sobre todos los demás cubos
+%              de su pila.
 hastaArriba(X) :- sobre(nada,X).
 
+% bloqueado. Relacién que indica que un cubo X no se puede mover pues hay cubos
+%            sobre él.
 bloqueado(X) :- not(hastaArriba(X)).
 
+% hastaAbajo. Relación que indica si un cubo X esta hasta abajo de la pila de
+%             cubos a la que pertenece.
 hastaAbajo(X) :- sobre(X,nada).
 
-%se mueve X sobre Y y el sobre() dentro del parenteis es la referencia actualizada.
-mover(X,Y,(N,sobre(X,Y))) :- quitar(sobre(X,_),N), not(bloqueado(X)), hastaArriba(Y).
+% mover. Relación que permite mover un cubo X sobre el cubo Y, actualizando las
+%        respectivas referencias.
+mover(X,X) :- !,fail.
+mover(X,Y) :- sobre(X,Y),!,fail.
+mover(X,Y) :- bloqueado(X), bloqueado(Y),!,fail.
+mover(X,Y) :- sobre(X,XS), quitar(X,XS), assert(sobre(X,Y)), retract(sobre(nada,Y)).
 
-%quitarya esta bien implementado  quiarAux(estado anterior, estado despues de aplicar el predicado)
-quitar(sobre(X,Y),sobre(nada,Y)) :- not(bloqueado(X)), sobre(X,Y).
+% quitar. Relación auxiliar que elimina un cubo de su lugar original si este no
+%         esta bloqueado eliminando el respectivo hecho sobre.
+quitar(X,Y) :- retract(sobre(X,Y)), not(bloqueado(X)), assert(sobre(nada,Y)).
 
-%mover X sobre Y (estado de la pila donde estaba X, estado de la pila X sobre Y)
- %quitar(sobre(X,Z),sobre(nada,Z)).
-
-%quitar(X,Y,N) :- not(bloqueado(X)), sobre(X,Y).
-%sobre(X,Y) :- discontiguous sobre(X,Y), mover(X,Y,(sobre(X,Y))).
-  %quitarAux(sobre(X,Y),sobre(nada,Y))
-
-%abajo(Y,X) :- sobre(X,Y).
-
-
-%will_be(put(grey, on, green), ([grey|Stack1], [green|Stack2]), (Stack1, [grey,green|Stack2])).
-%mover(put(X, on, Y), ([X|Stack1], [Y|Stack2]), (Stack1, [X,Y|Stack2])).
+/* Sin duda este fue uno de los ejercicios que más nos ha costado implementar en
+la practica, ya que sabíamos de antemano que la relación sobre() estaba conformada
+por hechos, además que llegamos muy rapidamente a la codificación de hastaArriba()
+hastaAbajo() y bloqueado(), ya que cada una de estas dependia de sobre(). Lo complicado
+fue cuando no sabíamos como modificar la base de datos que prolog estaba formando
+con sobre(). Investigamos en muchas fuentes hasta que dimos con los predicados dynamic,
+assert y retract que nos permiten hacer cambios a nuestra base de datos. Finalmente la
+implementación de mover dependio de verificar y eliminar las referencias que sobre()
+para cada cubo que moviamos, esto gracias a la funcion auxiliar sobre().
+*/
 
 % 3. Automata Finito no Determinista.
 
