@@ -1,3 +1,5 @@
+Require Import Setoid.
+Section Naturales.
 
 Inductive nat : Set :=
   | O : nat
@@ -34,56 +36,123 @@ Lemma suma_sucesor (x y : nat) : x + (S y) = S (x + y).
   simpl. rewrite IHx. reflexivity.
 Qed.
 
-Lemma conmutatividad_suma (x y : nat) : x + y = y + x.
+Theorem conmutatividad_suma: forall (x y : nat), x + y = y + x.
   Proof.
+  intros x y.
   induction x.
   simpl. rewrite suma_O. reflexivity.
   simpl. rewrite IHx. rewrite suma_sucesor. reflexivity.
 Qed.
 
-(*
-Lemma suma_O_inv (x : nat) : suma O x = x.
-Proof.
-  simpl. reflexivity.
-Qed.
-
-Lemma mult_O (x : nat) : mult O x = O.
-Proof.
-  simpl. reflexivity.
-Qed.
-
-Lemma suma_inv (x y : nat): suma S(x) y =*)
-
-Lemma mult_O_suma (x y : nat) : O * (x + y) = O.
+(*Lemma mult_O_suma (x y : nat) : O * (x + y) = O.
 Proof.
   induction x.
   rewrite conmutatividad_suma. rewrite suma_O. simpl. reflexivity.
   simpl. reflexivity.
-Qed.
+Qed.*)
 
-Lemma asociatividad_suma (x y z: nat) : (x + y) + z = x + (y + z).
+Theorem asociatividad_suma: forall (x y z: nat), (x + y) + z = x + (y + z).
   Proof.
+  intros x y z.
   induction x. 
   simpl. reflexivity.
- simpl. rewrite IHx. reflexivity.
+  simpl. rewrite IHx. reflexivity.
 Qed.
 
-(*Lemma auxiliar_suma (x y z : nat) : x + y + z = z + y + x.
+Theorem distributividad_suma: forall (n m r: nat), n * (m + r) = (n * m) + (n * r).
 Proof.
-  induction x.
-  simpl. rewrite conmutatividad_suma. rewrite suma_O. reflexivity.
-  simpl. rewrite IHx. rewrite <- suma.*)
-
-(*Hypothesis mult_0 : forall (x y : nat), mult 0 (suma x y) = 0.*)
-
-Lemma distributividad (n m r : nat) :
-  n * (m + r) = (n * m) + (n * r).
-Proof.
+  intros n m r.
   induction n.
   simpl. reflexivity.
-  simpl. rewrite IHn. rewrite asociatividad_suma. Check conmutatividad_suma. 
-Check conmutatividad_suma (n * m + n * r). Check conmutatividad_suma (n * m + n * r) r. 
-rewrite <- conmutatividad_suma.
-(*rewrite (conmutatividad_suma r + (n * m + n * r)).
-rewrite conmutatividad_suma. 
-rewrite asociatividad_suma. *)
+  simpl. rewrite IHn. rewrite asociatividad_suma. rewrite asociatividad_suma. 
+  rewrite conmutatividad_suma with (y := (n * m + n * r)). rewrite asociatividad_suma. 
+  rewrite conmutatividad_suma with (y := r). reflexivity.
+  Qed.
+
+Section Grupos.
+
+(* Un grupo es un conjunto G junto con una operacion binaria sobre G que combina dos elementos en otro de G. Hay un elemento especial que es llamado el elemento identidad y para cada elemento en G existe uno inverso que bajo la operacion obtiene a la identidad *)
+
+Variable G: Set.
+
+Hypotheses (e:G)  (* Neutro *)
+           (g:G -> G -> G) (* Operacion binaria*)
+           (h:G -> G). (* Inverso *)
+
+(* Las condiciones anteriores satisfacen las siguientes propiedades: *)
+Hypothesis Asoc : forall x y z : G, g x (g y z) = g (g x y) z.
+
+Hypothesis Inv : forall x:G, g (h x) x = e.
+
+Hypothesis Neut : forall x:G, g e x = x.
+
+(* notacion para hacer infija a la operacion binaria *)
+Infix "<+>" := g (at level 50, left associativity).
+
+
+(* Este puede ser ejercicio para lab *)
+Theorem NeutIdem: forall x:G, g x x = x -> x = e.
+Proof.
+intros.
+rewrite <- Inv with x.
+rewrite <- H at 3.
+rewrite Asoc.
+rewrite Inv.
+rewrite Neut.
+trivial.
+(*reflexivity.*)
+Qed.
+Theorem Cancel: forall x y z:G, g x y = g x z -> y = z.
+Proof.
+intros.
+rewrite <- Neut with y.
+rewrite <- Inv with x.
+rewrite <- Asoc.
+rewrite H.
+rewrite Asoc.
+rewrite Inv.
+rewrite Neut.
+reflexivity.
+Qed. (**)
+
+(*Lemma Neut_aux : forall x : G, g x e = x.
+Proof.
+  intros.
+  rewrite <- Inv with x.
+  rewrite Asoc.
+  *)
+
+(*
+Theorem unicidad_invers: forall (x y : G), g x y = e -> y = h x.
+Proof.
+  intros.
+  rewrite <- Neut with y.
+  rewrite <- Inv with x.
+  rewrite <- Asoc.
+  rewrite H.
+  reflexivity.
+Qed.*)
+
+
+(* Esto se tiene que probar con la unicidad*)
+Hypothesis Inv1 : forall x:G, g x (h x) = e.
+
+Hypothesis Neut1 : forall x:G, g x e = x.
+
+Lemma auxiliar: forall x:G, g e (h x) = h x.
+Proof.
+  intros.
+  rewrite Neut. reflexivity.
+Qed.
+
+Theorem doble_inverso: forall x : G, h (h x) = x.
+  Proof.
+  intro x.
+  rewrite <- auxiliar.
+  rewrite <- Inv1 with x.
+  rewrite <- Asoc.
+  rewrite Inv1.
+  rewrite Neut1.
+  trivial.
+Qed.
+
