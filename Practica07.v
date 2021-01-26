@@ -135,24 +135,54 @@ Qed.*)
 
 
 (* Esto se tiene que probar con la unicidad*)
-Hypothesis Inv1 : forall x:G, g x (h x) = e.
-
-Hypothesis Neut1 : forall x:G, g x e = x.
-
-Lemma auxiliar: forall x:G, g e (h x) = h x.
+Theorem InvDer: forall x: G, g x (h x) = e.
 Proof.
   intros.
-  rewrite Neut. reflexivity.
+  apply NeutIdem.
+rewrite <- Asoc.
+rewrite Asoc with (h x) (x) (h x).
+rewrite Inv.
+rewrite Neut.
+reflexivity.
 Qed.
+
+(*Hypothesis Inv1 : forall x:G, g x (h x) = e.*)
+
+Theorem NeutDer : forall x:G, g x e = x.
+Proof.
+  intros.
+  cut (e = g (h x) x).
+  intro.
+  rewrite H.
+  rewrite Asoc.
+  rewrite InvDer.
+  rewrite Neut.
+  trivial.
+  rewrite Inv.
+  trivial.
+Qed.
+
+Theorem unicinv: forall z x : G, g z x = e -> x = h z.
+Proof.
+  intros.
+  rewrite <- Neut with x.
+  rewrite <- Inv with z.
+  rewrite <- Asoc.
+  rewrite H.
+  rewrite NeutDer.
+  reflexivity.
+Qed.
+
+(*modus ponens*)
 
 Theorem doble_inverso: forall x : G, h (h x) = x.
   Proof.
   intro x.
-  rewrite <- auxiliar.
-  rewrite <- Inv1 with x.
+  rewrite <- Neut with (h (h x)).
+  rewrite <- InvDer with x.
   rewrite <- Asoc.
-  rewrite Inv1.
-  rewrite Neut1.
+  rewrite InvDer.
+  rewrite NeutDer.
   trivial.
 Qed.
 
