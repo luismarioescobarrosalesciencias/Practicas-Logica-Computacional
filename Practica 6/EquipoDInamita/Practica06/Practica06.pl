@@ -1,3 +1,4 @@
+
 % Practica 6
 
 
@@ -132,10 +133,28 @@ aceptarAux([],_,_) :- !,fail.
 aceptarAux([E],QI,QF) :- delta(QI,E,[QF]).
 aceptarAux([E|ES],QI,QF) :- delta(QI,E,[N]), aceptarAux(ES,N,QF).
 
-%Llegue al resultado ya que pense en una especie de camino que deberia de recorrerse
+/*
+Llegue al resultado ya que pense en una especie de camino que deberia de recorrerse
 % para llegar de un punto a otro. SI nos daban una lista, teniamos que descomponerla,
 % y verificar que partiendo de el estado inicial y con el primer elemento de la lista
 % de simbolos si el siguiente estado correspondia a dicho simbolo, y asi recursivamente
 % hasta llegar al estado final. Como aceptar solo recibe unalista, pensamos en aceptarAux
-% que recibe como referencia los estados inicial (el estado actual en el que se encuentra)
-% y el estado final que es al que se quiere llegar al final de descomponerla.
+% que recibe como referencia los estados inicial (el estado actual en el que se en "%
+*/
+
+/* 4 Ordenar y mezclar */ 
+/* ordenar(L,L) recibe una lista y la ordena de menor a mayor 
+*/
+ordenar(L,L).
+ordenar(L,R):- conc(P,[A,B|S], L), A>B,!,conc(P, [B,A| S],L3), ordenar(L3, R).
+
+% Dadas dos listas previamente ordenadas, las mezcla 
+mezclar([],[],[]):-!.  % La mezcla de dos listas vacias es una lista vacia, y no necesitamos verificar mas 
+
+mezclar(L,[],L). % mezclar una lista con una vacia, da la misma lista 
+mezclar([],L, L).
+mezclar([A|As], [B|Bs], [A|Cs]):- A<B,!, mezclar(As, [B|Bs], Cs).  % Si A es el elemento mas pequeño, entonces el resultado de la mezcla A con As (su cola) con L2 sera la lista mezclada 
+mezclar([A|As], [B|Bs], [A,B|Cs]):- A=B,!,mezclar(As, Bs, Cs). 
+mezclar([A|As], [B|Bs], [B|Cs]):- A>B,!, mezclar([A|As], Bs, Cs). 
+/*En este caso el operador de corte se utiliza porque solo podemos hacer 3 comparaciones A>B, A=B, A<B,solo una sera cierta 
+ haciendo que el programa sea mas rapido, con menos gasto de memoria y */

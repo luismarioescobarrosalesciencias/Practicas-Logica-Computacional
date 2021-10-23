@@ -185,4 +185,3 @@ Theorem doble_inverso: forall x : G, h (h x) = x.
   rewrite NeutDer.
   trivial.
 Qed.
-

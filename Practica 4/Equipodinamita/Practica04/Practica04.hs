@@ -206,7 +206,7 @@ union xs ys = xs ++ [y | y <- ys, y `notElem` xs]
 alphaEq :: Form -> Form -> Bool
 alphaEq f1 f2 = listasiguales (fv f1) (fv f2) && (formulasEq f1 f2)
 --
---Compara formulas
+
 formulasEq :: Form -> Form -> Bool
 formulasEq NForm NForm = True
 formulasEq NForm g = False
@@ -233,14 +233,12 @@ formulasEq (Ex x f) g = False
 formulasEq (All x f) (All y g) = True && (formulasEq f g)
 formulasEq (All x f) g = False
 
---Compara terminos 
 terminosEq :: Term -> Term -> Bool
 terminosEq (V x) (V y) = True
 terminosEq (V x) t = False
 terminosEq (F f1 t1) (F f2 t2) = True && terminosEqConj t1 t2
 terminosEq (F f1 t1) t = False
 
---Compara listas de terminos 
 terminosEqConj :: [Term] -> [Term] -> Bool
 terminosEqConj [] [] = True
 terminosEqConj [] t = False
@@ -314,5 +312,4 @@ renauxconj (Ex n f) l = if(not (elem (n++"s0") l ) )
 
 sustFormAlpha :: Form -> Subst -> Form
 sustFormAlpha p s=sustForm(renauxconj p ((listavarSus s)++(fv p))) s
-
 
